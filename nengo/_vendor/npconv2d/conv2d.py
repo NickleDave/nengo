@@ -198,6 +198,10 @@ def conv2d_gradx(w, dy, xsize, pad='SAME', stride=(1, 1)):
 
     Returns:
         dx: [N, H, W, C]
+
+    Modifications from original code:
+      - Do not transpose input/output channels in `w`
+      - Fix bug in computing `pad2w` (use `dys[1]` instead of `dys[0]`)
     """
     assert w.shape[-2] == dy.shape[-1]
     ksize = w.shape[:2]
