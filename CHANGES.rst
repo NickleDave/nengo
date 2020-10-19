@@ -19,6 +19,16 @@ Release history
    - Removed
    - Fixed
 
+3.2.0 (unreleased)
+==================
+
+**Added**
+
+- Added ``ChannelShape.from_space_and_channels`` to easily construct a ``ChannelShape``
+  from a spatial shape and number of channels. (`#1648`_)
+
+.. _#1648: https://github.com/nengo/nengo/pull/1648
+
 3.1.0 (unreleased)
 ==================
 
