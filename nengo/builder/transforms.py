@@ -118,10 +118,10 @@ def build_convolution(
     return weighted, weight_sig
 
 
-class ConvInc(Operator):
+class GeneralConvInc(Operator):
     """Apply convolutional weights to input signal.
 
-    .. versionadded:: 3.0.0
+    .. versionadded:: 3.2.0
 
     Parameters
     ----------
@@ -131,8 +131,8 @@ class ConvInc(Operator):
         The input signal.
     Y : Signal
         Output signal to be incremented.
-    conv : `~nengo.Convolution`
-        The Convolution object being applied.
+    conv : `~nengo.Convolution` or `~nengo.transforms.ConvolutionTranspose`
+        The Convolution or ConvolutionTranspose transform being applied.
     tag : str, optional
         A label associated with the operator, for debugging purposes.
 
@@ -144,8 +144,8 @@ class ConvInc(Operator):
         The input signal.
     Y : Signal
         Output signal to be incremented.
-    conv : `~nengo.Convolution`
-        The Convolution object being applied.
+    conv : `~nengo.Convolution` or `~nengo.transforms.ConvolutionTranspose`
+        The Convolution or ConvolutionTranspose transform being applied.
     tag : str, optional
         A label associated with the operator, for debugging purposes.
 
@@ -158,6 +158,8 @@ class ConvInc(Operator):
     """
 
     def __init__(self, W, X, Y, conv, tag=None):
+        assert isinstance(conv, (Convolution, ConvolutionTranspose))
+
         super().__init__(tag=tag)
 
         self.conv = conv
@@ -166,6 +168,10 @@ class ConvInc(Operator):
         self.incs = [Y]
         self.reads = [W, X]
         self.updates = []
+
+    @property
+    def transpose(self):
+        return isinstance(self.conv, ConvolutionTranspose)
 
     @property
     def W(self):
@@ -181,7 +187,8 @@ class ConvInc(Operator):
 
     @property
     def _descstr(self):
-        return "conv2d(%s, %s) -> %s" % (self.W, self.X, self.Y)
+        name = "convtranspose2d" if self.transpose else "conv2d"
+        return "%s(%s, %s) -> %s" % (name, self.W, self.X, self.Y)
 
     def make_step(self, signals, dt, rng):
         if self.conv.dimensions > 2:
@@ -194,6 +201,9 @@ class ConvInc(Operator):
         Y = signals[self.Y]
         pad = self.conv.padding.upper()
         stride = self.conv.strides
+        output_spatial_shape = (
+            self.conv.output_shape.spatial_shape if self.transpose else None
+        )
 
         X = X.reshape(self.conv.input_shape.shape)
         Y = Y.reshape(self.conv.output_shape.shape)
@@ -208,117 +218,39 @@ class ConvInc(Operator):
             W = W[None, :, :, :]
             Y = Y[None, :, :]
             stride = (1,) + stride
+            if output_spatial_shape is not None:
+                output_spatial_shape = (1,) + output_spatial_shape
 
         # add empty batch dimension
         X = X[None, ...]
 
-        def step_conv():
-            Y[...] += conv2d.conv2d(X, W, pad=pad, stride=stride)[0]
+        if self.transpose:
 
-        return step_conv
+            def step_conv_transpose():
+                Y[...] += conv2d.conv2d_gradx(
+                    W, X, xsize=output_spatial_shape, pad=pad, stride=stride
+                )[0]
+
+            return step_conv_transpose
+
+        else:
+
+            def step_conv():
+                Y[...] += conv2d.conv2d(X, W, pad=pad, stride=stride)[0]
+
+            return step_conv
 
 
-class ConvTransposeInc(Operator):
-    """Apply transpose convolutional weights to input signal.
+class ConvInc(GeneralConvInc):
+    def __init__(self, W, X, Y, conv, tag=None):
+        super().__init__(W, X, Y, conv, tag=tag)
+        assert not self.transpose
 
-    .. versionadded:: 3.2.0
 
-    Parameters
-    ----------
-    W : Signal
-        The convolutional weights (a.k.a. the kernel).
-    X : Signal
-        The input signal.
-    Y : Signal
-        Output signal to be incremented.
-    conv_transpose : `~nengo.ConvolutionTranspose`
-        The ConvolutionTranspose object being applied.
-    tag : str, optional
-        A label associated with the operator, for debugging purposes.
-
-    Attributes
-    ----------
-    W : Signal
-        The convolutional weights.
-    X : Signal
-        The input signal.
-    Y : Signal
-        Output signal to be incremented.
-    conv : `~nengo.Convolution`
-        The Convolution object being applied.
-    tag : str, optional
-        A label associated with the operator, for debugging purposes.
-
-    Notes
-    -----
-    1. sets ``[]``
-    2. incs ``[Y]``
-    3. reads ``[W, X]``
-    4. updates ``[]``
-    """
-
-    def __init__(self, W, X, Y, conv_transpose, tag=None):
-        super().__init__(tag=tag)
-
-        self.conv_transpose = conv_transpose
-
-        self.sets = []
-        self.incs = [Y]
-        self.reads = [W, X]
-        self.updates = []
-
-    @property
-    def W(self):
-        return self.reads[0]
-
-    @property
-    def X(self):
-        return self.reads[1]
-
-    @property
-    def Y(self):
-        return self.incs[0]
-
-    def _descstr(self):
-        return "convtranspose2d(%s, %s) -> %s" % (self.W, self.X, self.Y)
-
-    def make_step(self, signals, dt, rng):
-        if self.conv_transpose.dimensions > 2:
-            # note: we raise the error here, rather than earlier, because
-            # other backends might support different convolutions
-            raise NotImplementedError("Convolution > 2D not supported")
-
-        W = signals[self.W]
-        X = signals[self.X]
-        Y = signals[self.Y]
-        pad = self.conv_transpose.padding.upper()
-        stride = self.conv_transpose.strides
-        output_spatial_shape = self.conv_transpose.output_shape.spatial_shape
-
-        X = X.reshape(self.conv_transpose.input_shape.shape)
-        Y = Y.reshape(self.conv_transpose.output_shape.shape)
-
-        if not self.conv_transpose.channels_last:
-            X = np.moveaxis(X, 0, -1)
-            Y = np.moveaxis(Y, 0, -1)
-
-        if self.conv_transpose.dimensions == 1:
-            # add extra dimension to make it a 2D convolution
-            X = X[None, :, :]
-            W = W[None, :, :, :]
-            Y = Y[None, :, :]
-            stride = (1,) + stride
-            output_spatial_shape = (1,) + output_spatial_shape
-
-        # add empty batch dimension
-        X = X[None, ...]
-
-        def step_conv():
-            Y[...] += conv2d.conv2d_gradx(
-                W, X, xsize=output_spatial_shape, pad=pad, stride=stride
-            )[0]
-
-        return step_conv
+class ConvTransposeInc(GeneralConvInc):
+    def __init__(self, W, X, Y, conv, tag=None):
+        super().__init__(W, X, Y, conv, tag=tag)
+        assert self.transpose
 
 
 @Builder.register(NoTransform)

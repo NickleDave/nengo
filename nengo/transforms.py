@@ -395,7 +395,7 @@ class _ConvolutionBase(Transform):
     def _argreprs(self):
         argreprs = [
             "n_filters=%r" % (self.n_filters,),
-            "input_shape=%s" % (self.input_shape,),
+            "input_shape=%s" % (self.input_shape.shape,),
         ]
         if self.kernel_size != (3, 3):
             argreprs.append("kernel_size=%r" % (self.kernel_size,))
@@ -615,7 +615,7 @@ class ConvolutionTranspose(_ConvolutionBase):
 
         if self.output_shape.dimensions != self.input_shape.dimensions:
             raise ValidationError(
-                "The number of dimensions (%d) in the provided `output_shape` (%s) does"
+                "The number of dimensions (%d) in the provided `output_shape` %s does"
                 " not match the number of dimensions (%d) in the input shape."
                 % (
                     self.output_shape.dimensions,
@@ -627,7 +627,7 @@ class ConvolutionTranspose(_ConvolutionBase):
             )
         if self.output_shape.n_channels != self.n_filters:
             raise ValidationError(
-                "The number of channels in the provided `output_shape` (%s) does not "
+                "The number of channels in the provided `output_shape` %s does not "
                 "match the requested number of filters (%d)."
                 % (self.output_shape, self.n_filters),
                 attr="output_shape",
@@ -639,7 +639,7 @@ class ConvolutionTranspose(_ConvolutionBase):
         )
         if self.input_shape != expected_input_shape:
             raise ValidationError(
-                "The provided `output_shape` (%s) would not produce `input_shape` (%s) "
+                "The provided `output_shape` %s would not produce `input_shape` %s "
                 "in a forward Convolution, and is therefore not a valid output shape."
                 % (self.output_shape, self.input_shape),
                 attr="output_shape",
@@ -649,12 +649,12 @@ class ConvolutionTranspose(_ConvolutionBase):
     @property
     def _argreprs(self):
         argreprs = super()._argreprs
-        argreprs.insert(2, "output_shape=%s" % (self.output_shape,))
+        argreprs.insert(2, "output_shape=%s" % (self.output_shape.shape,))
         return argreprs
 
     def _reverse_shape(self, input_spatial_shape, n_filters):
         output_shape = np.array(input_spatial_shape, dtype=rc.int_dtype)
-        output_shape *= self.strides
+        output_shape = 1 + (output_shape - 1) * self.strides
         if self.padding == "valid":
             output_shape += self.kernel_size
             output_shape -= 1

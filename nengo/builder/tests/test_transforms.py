@@ -260,6 +260,18 @@ def test_convtransposeinc_2d(
 def test_convinc_attrs_decstr():
     argnames = ["W", "X", "Y", "conv"]
     non_signals = ["conv"]
-    _, sim = _test_operator_arg_attributes(ConvInc, argnames, non_signals=non_signals)
 
+    conv = Convolution(4, (3, 5, 2))
+    _, sim = _test_operator_arg_attributes(
+        ConvInc, argnames, non_signals=non_signals, args={"conv": conv}
+    )
     assert str(sim) == "ConvInc{conv2d(W, X) -> Y}"
+
+    conv_transpose = ConvolutionTranspose(4, (3, 5, 2))
+    _, sim = _test_operator_arg_attributes(
+        ConvTransposeInc,
+        argnames,
+        non_signals=non_signals,
+        args={"conv": conv_transpose},
+    )
+    assert str(sim) == "ConvTransposeInc{convtranspose2d(W, X) -> Y}"
