@@ -11,7 +11,6 @@ from nengo._vendor.npconv2d import conv2d
 @pytest.mark.parametrize("channels_last", (True, False))
 @pytest.mark.parametrize("fixed_kernel", (True, False))
 @pytest.mark.parametrize("transpose", (True, False))
-# @pytest.mark.parametrize("transpose", (True, ))
 def test_convolution(
     dimensions,
     padding,
