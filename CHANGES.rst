@@ -83,6 +83,11 @@ Release history
   is decoded or not was ambiguous. Instead we recommend directly checking the pre/post
   objects for the properties of interest. (`#1640`_)
 
+**Removed**
+
+- Removed support for Python 3.5 (which reached its end of life in
+  September 2020). (`#1649`_)
+
 **Fixed**
 
 - Fixed a bug when comparing equality with ``Ensemble.neurons`` or
@@ -113,6 +118,7 @@ Release history
 .. _#1629: https://github.com/nengo/nengo/pull/1629
 .. _#1630: https://github.com/nengo/nengo/pull/1630
 .. _#1640: https://github.com/nengo/nengo/pull/1640
+.. _#1649: https://github.com/nengo/nengo/pull/1649
 
 3.0.0 (November 18, 2019)
 =========================

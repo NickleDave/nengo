@@ -8,7 +8,6 @@ import pickle
 import shutil
 import struct
 from subprocess import CalledProcessError
-import sys
 from uuid import uuid1
 import warnings
 
@@ -74,10 +73,6 @@ from nengo.utils.least_squares_solvers import (
 from nengo.utils.lock import FileLock
 
 logger = logging.getLogger(__name__)
-
-if sys.version_info < (3, 3, 0):
-    # there was no PermissionError before 3.3
-    PermissionError = OSError
 
 
 def get_fragment_size(path):
