@@ -176,7 +176,7 @@ class TestAutoProgressBar:
         assert isinstance(get_default_progressbar(), TerminalProgressBar)
 
 
-def test_write_progress_to_file(tmpdir):
+def test_write_progress_to_file(tmp_path):
     """Tests the WriteProgressToFile progress bar type"""
 
     def check_file(filename, startstring):
@@ -184,7 +184,7 @@ def test_write_progress_to_file(tmpdir):
             data = fh.read()
         assert data.startswith(startstring)
 
-    filename = str(tmpdir.join("test_write_progress_file.txt"))
+    filename = tmp_path / "test_write_progress_file.txt"
     progress = Progress(name_during="myprog", max_steps=2)
     bar = WriteProgressToFile(filename)
 
@@ -238,7 +238,7 @@ def test_progress_tracker():
     assert progress_bar.closed
 
 
-def test_to_progress_bar(request, tmpdir):
+def test_to_progress_bar(request, tmp_path):
     def finalizer(val=rc["progress"]["progress_bar"]):
         rc["progress"]["progress_bar"] = val
 
@@ -252,5 +252,5 @@ def test_to_progress_bar(request, tmpdir):
     rc["progress"]["progress_bar"] = "nengo.utils.progress.HtmlProgressBar"
     assert isinstance(to_progressbar(True), HtmlProgressBar)
 
-    progress_bar = WriteProgressToFile(str(tmpdir.join("dummyfile.txt")))
+    progress_bar = WriteProgressToFile(tmp_path / "dummyfile.txt")
     assert to_progressbar(progress_bar) is progress_bar

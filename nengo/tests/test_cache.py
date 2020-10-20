@@ -1,6 +1,7 @@
 import errno
 import multiprocessing
 import os
+import pathlib
 import sys
 from subprocess import CalledProcessError
 
@@ -524,12 +525,15 @@ def test_writeablecacheindex_removes(tmpdir):
 
 
 def test_writeablecacheindex_warning(monkeypatch, tmpdir):
-    def raise_error(*args, **kwargs):
-        raise CalledProcessError(-1, "move")
 
-    monkeypatch.setattr(os, "replace", raise_error)
     with pytest.warns(CacheIOWarning):
-        with WriteableCacheIndex(cache_dir=str(tmpdir)):
+        with WriteableCacheIndex(cache_dir=str(tmpdir)) as idx:
+
+            class RaiseError(type(idx.cache_dir)):
+                def replace(self, *args, **kwargs):
+                    raise CalledProcessError(-1, "move")
+
+            monkeypatch.setattr(idx, "cache_dir", RaiseError(idx.cache_dir))
             pass
 
 

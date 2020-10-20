@@ -253,7 +253,7 @@ def make_signal(sig_type, shape, indices, data):
 
 
 @pytest.mark.parametrize("sig_type", ("dense", "sparse_scipy", "sparse_nengo"))
-def test_signal_initial_value(sig_type, tmpdir, allclose):
+def test_signal_initial_value(sig_type, tmp_path, allclose):
     if sig_type == "sparse_scipy":
         pytest.importorskip("scipy.sparse")
 
@@ -277,7 +277,7 @@ def test_signal_initial_value(sig_type, tmpdir, allclose):
         sig.initial_value = sig.initial_value
 
     # check signal pickles correctly
-    pkl_path = str(tmpdir.join("tmp.pkl"))
+    pkl_path = tmp_path / "tmp.pkl"
     with open(pkl_path, "wb") as f:
         pickle.dump(sig, f)
 

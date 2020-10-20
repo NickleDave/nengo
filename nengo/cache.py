@@ -4,6 +4,7 @@ import errno
 import hashlib
 import logging
 import os
+import pathlib
 import pickle
 import shutil
 import struct
@@ -84,27 +85,27 @@ def get_fragment_size(path):
 
 
 def safe_stat(path):
-    """Does os.stat, but fails gracefully in case of an OSError."""
+    """Gets file stat, but fails gracefully in case of an OSError."""
     try:
-        return os.stat(path)
+        return path.stat()
     except OSError as err:
         logger.warning("OSError during safe_stat: %s", err)
     return None
 
 
 def safe_remove(path):
-    """Does os.remove, but fails gracefully in case of an OSError."""
+    """Removes file, but fails gracefully in case of an OSError."""
     try:
-        os.remove(path)
+        path.unlink()
     except OSError as err:
         logger.warning("OSError during safe_remove: %s", err)
 
 
 def safe_makedirs(path):
     """Try to make directories, but continue on error."""
-    if not os.path.exists(path):
+    if not path.exists():
         try:
-            os.makedirs(path)
+            path.mkdir()
         except OSError as err:
             logger.warning("OSError during safe_makedirs: %s", err)
 
@@ -351,13 +352,13 @@ class CacheIndex:
     VERSION = 2
 
     def __init__(self, cache_dir):
-        self.cache_dir = cache_dir
+        self.cache_dir = pathlib.Path(cache_dir)
         self.version = None
         self._index = None
 
     @property
     def index_path(self):
-        return os.path.join(self.cache_dir, self._INDEX)
+        return self.cache_dir / self._INDEX
 
     def __contains__(self, key):
         return key in self._index
@@ -434,7 +435,9 @@ class WriteableCacheIndex(CacheIndex):
 
     def __init__(self, cache_dir):
         super().__init__(cache_dir)
-        self._lock = FileLock(self.index_path + ".lock")
+        self._lock = FileLock(
+            self.index_path.with_suffix(self.index_path.suffix + ".lock")
+        )
         self._updates = {}
         self._deletes = set()
         self._removed_files = set()
@@ -469,25 +472,26 @@ class WriteableCacheIndex(CacheIndex):
         self.sync()
 
     def _reinit(self):
-        for f in os.listdir(self.cache_dir):
-            path = os.path.join(self.cache_dir, f)
+        for path in self.cache_dir.iterdir():
             if path == self._lock.filename:
                 continue
-            if os.path.isdir(path):
-                shutil.rmtree(path)
+            if path.is_dir():
+                path.rmdir()
             else:
-                os.remove(path)
+                path.unlink()
         self._index = {}
 
     def remove_file_entry(self, filename):
         """Remove entries mapping to ``filename``."""
-        if os.path.realpath(filename).startswith(self.cache_dir):
-            filename = os.path.relpath(filename, self.cache_dir)
-        self._removed_files.add(filename)
+        filename = pathlib.Path(filename)
+        if self.cache_dir in filename.parents:
+            filename = filename.relative_to(self.cache_dir)
+        self._removed_files.add(str(filename))
 
     def _write_index(self):
         assert self._lock.acquired
-        with open(self.index_path + ".part", "wb") as f:
+        part_path = self.index_path.with_suffix(self.index_path.suffix + ".part")
+        with part_path.open("wb") as f:
             # Use protocol 2 for version information to ensure that
             # all Python versions supported by Nengo will be able to
             # read it in the future.
@@ -496,7 +500,7 @@ class WriteableCacheIndex(CacheIndex):
             # performance.
             pickle.dump(self._index, f, pickle.HIGHEST_PROTOCOL)
         try:
-            os.replace(self.index_path + ".part", self.index_path)
+            part_path.replace(self.index_path)
         except (CalledProcessError, PermissionError):
             # It may fail when
             # another program like a virus scanner is accessing the file to be
@@ -577,7 +581,7 @@ class DecoderCache:
         self.readonly = readonly
         if cache_dir is None:
             cache_dir = self.get_default_dir()
-        self.cache_dir = cache_dir
+        self.cache_dir = pathlib.Path(cache_dir)
         if readonly:
             self._index = CacheIndex(cache_dir)
         else:
@@ -642,10 +646,9 @@ class DecoderCache:
         list of (str, int) tuples
         """
         files = []
-        for subdir in os.listdir(self.cache_dir):
-            path = os.path.join(self.cache_dir, subdir)
-            if os.path.isdir(path):
-                files.extend(os.path.join(path, f) for f in os.listdir(path))
+        for path in self.cache_dir.iterdir():
+            if path.is_dir():
+                files.extend(path.iterdir())
         return files
 
     def get_size(self):
@@ -812,9 +815,9 @@ class DecoderCache:
     def _key2path(self, key):
         prefix = key[:2]
         suffix = key[2:]
-        directory = os.path.join(self.cache_dir, prefix)
+        directory = self.cache_dir / prefix
         safe_makedirs(directory)
-        return os.path.join(directory, suffix + self._CACHE_EXT)
+        return directory / (suffix + self._CACHE_EXT)
 
 
 class NoDecoderCache:
