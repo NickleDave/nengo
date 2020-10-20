@@ -7,7 +7,7 @@ if sys.platform.startswith("win"):  # pragma: no cover
     cache_dir = config_dir / "cache"
 else:
     config_dir = pathlib.Path.home() / ".config" / "nengo"
-    config_dir = pathlib.Path.home() / ".cache" / "nengo"
+    cache_dir = pathlib.Path.home() / ".cache" / "nengo"
 
 decoder_cache_dir = cache_dir / "decoders"
 install_dir = pathlib.Path(__file__).parents[2]
