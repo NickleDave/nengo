@@ -325,8 +325,8 @@ def test_instanceparams_str_repr():
         model.config[nengo.Ensemble].set_param("prm", nengo.params.Parameter("prm"))
         model.config[a].prm = "val"
 
-    assert str(model.config[a]) == 'Parameters set for <Ensemble "a">:\n  prm: val'
-    assert repr(model.config[a]) == '<InstanceParams[<Ensemble "a">]{prm: val}>'
+    assert str(model.config[a]) == "Parameters set for <Ensemble 'a'>:\n  prm: val"
+    assert repr(model.config[a]) == "<InstanceParams[<Ensemble 'a'>]{prm: val}>"
 
 
 def test_instanceparams_contains():

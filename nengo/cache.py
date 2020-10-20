@@ -6,7 +6,6 @@ import logging
 import os
 import pathlib
 import pickle
-import shutil
 import struct
 from subprocess import CalledProcessError
 from uuid import uuid1
@@ -249,7 +248,7 @@ class Fingerprint:
     def __init__(self, obj):
         if not self.supports(obj):
             raise FingerprintError(
-                "Object of type %r cannot be fingerprinted." % type(obj).__name__
+                f"Object of type '{type(obj).__name__}' cannot be fingerprinted."
             )
 
         self.fingerprint = hashlib.sha1()
@@ -513,8 +512,8 @@ class WriteableCacheIndex(CacheIndex):
                 "it a lot, you might want to consider doing one of the "
                 "following for the best Nengo performance:\n"
                 "1. Configure your anti-virus to ignore the Nengo cache "
-                "folder ('{cache_dir}').\n"
-                "2. Disable the cache.\n".format(cache_dir=self.cache_dir),
+                f"folder ('{self.cache_dir}').\n"
+                "2. Disable the cache.\n",
                 category=CacheIOWarning,
             )
 

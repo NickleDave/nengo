@@ -94,11 +94,11 @@ class Parameter:
         readonly = default is Unconfigurable if readonly is None else readonly
 
         if not isinstance(name, str):
-            raise ValueError("'name' must be a string (got %r)" % name)
+            raise ValueError(f"'name' must be a string (got {name!r})")
         if not isinstance(optional, bool):
-            raise ValueError("'optional' must be boolean (got %r)" % optional)
+            raise ValueError(f"'optional' must be boolean (got {optional!r})")
         if not isinstance(readonly, bool):
-            raise ValueError("'readonly' must be boolean (got %r)" % readonly)
+            raise ValueError(f"'readonly' must be boolean (got {readonly!r})")
 
         self.name = name
         self.default = default
@@ -151,12 +151,9 @@ class Parameter:
         self.data[instance] = self.coerce(instance, value)
 
     def __repr__(self):
-        return "%s(%r, default=%s, optional=%s, readonly=%s)" % (
-            type(self).__name__,
-            self.name,
-            self.default,
-            self.optional,
-            self.readonly,
+        return (
+            f"{type(self).__name__}('{self.name}', default={self.default}, "
+            f"optional={self.optional}, readonly={self.readonly})"
         )
 
     @property
@@ -171,7 +168,7 @@ class Parameter:
 
     def set_default(self, obj, value):
         if not self.configurable:
-            raise ConfigError("Parameter '%s' is not configurable" % self)
+            raise ConfigError(f"Parameter '{self}' is not configurable")
         self._defaults[obj] = self.coerce(obj, value) if self.coerce_defaults else value
 
     def check_type(self, instance, value, type_):
@@ -181,7 +178,7 @@ class Parameter:
             else:
                 type_str = type_.__name__
             raise ValidationError(
-                "Must be of type %r (got type %r)." % (type_str, type(value).__name__),
+                f"Must be of type '{type_str}' (got type '{type(value).__name__}').",
                 attr=self.name,
                 obj=instance,
             )
@@ -285,7 +282,7 @@ class NumberParam(Parameter):
 
             if not is_number(num):
                 raise ValidationError(
-                    "Must be a number; got '%s'" % num, attr=self.name, obj=instance
+                    f"Must be a number; got '{num}'", attr=self.name, obj=instance
                 )
             low_comp = 0 if self.low_open else -1
             if self.low is not None and compare(num, self.low) <= low_comp:
@@ -351,7 +348,7 @@ class EnumParam(StringParam):
         string = string.lower() if self.lower else string
         if string not in self.value_set:
             raise ValidationError(
-                "String %r must be one of %s" % (string, list(self.values)),
+                f"String '{string}' must be one of {list(self.values)}",
                 attr=self.name,
                 obj=instance,
             )
@@ -380,7 +377,7 @@ class TupleParam(Parameter):
 
             if self.length is not None and len(value) != self.length:
                 raise ValidationError(
-                    "Must be %d items (got %d)" % (self.length, len(value)),
+                    f"Must be {self.length} items (got {len(value)})",
                     attr=self.name,
                     obj=instance,
                 )
@@ -419,7 +416,7 @@ class ShapeParam(TupleParam):
                     )
                 if self.low is not None and v < self.low:
                     raise ValidationError(
-                        "Element %d must be >= %d (got %d)" % (i, self.low, v),
+                        f"Element {i} must be >= {self.low} (got {v})",
                         attr=self.name,
                         obj=instance,
                     )
@@ -519,7 +516,7 @@ class NdarrayParam(Parameter):
             n = ndarray.ndim - nfixed
             if n < 0:
                 raise ValidationError(
-                    "ndarray must be at least %dD (got %dD)" % (nfixed, ndarray.ndim),
+                    f"ndarray must be at least {nfixed}D (got {ndarray.ndim}D)",
                     attr=self.name,
                     obj=instance,
                 )
@@ -533,7 +530,7 @@ class NdarrayParam(Parameter):
 
         if ndarray.ndim != len(shape):
             raise ValidationError(
-                "ndarray must be %dD (got %dD)" % (len(shape), ndarray.ndim),
+                f"ndarray must be {len(shape)}D (got {ndarray.ndim}D)",
                 attr=self.name,
                 obj=instance,
             )
@@ -549,15 +546,15 @@ class NdarrayParam(Parameter):
 
             if not is_integer(desired):
                 raise ValidationError(
-                    "%s not yet initialized; cannot determine if shape is "
-                    "correct. Consider using a distribution instead." % attr,
+                    f"{attr} not yet initialized; cannot determine if shape is "
+                    "correct. Consider using a distribution instead.",
                     attr=self.name,
                     obj=instance,
                 )
 
             if ndarray.shape[i] != desired:
                 raise ValidationError(
-                    "shape[%d] should be %d (got %d)" % (i, desired, ndarray.shape[i]),
+                    f"shape[{i}] should be {desired} (got {ndarray.shape[i]})",
                     attr=self.name,
                     obj=instance,
                 )
@@ -575,7 +572,7 @@ class FunctionParam(Parameter):
         value, invoked = checked_call(function, *args)
         if not invoked:
             raise ValidationError(
-                "function '%s' must accept a single np.array argument" % function,
+                f"function '{function}' must accept a single np.array argument",
                 attr=self.name,
                 obj=instance,
             )
@@ -597,7 +594,7 @@ class FunctionParam(Parameter):
 
         if function is not None and not callable(function):
             raise ValidationError(
-                "function '%s' must be callable" % function,
+                f"function '{function}' must be callable",
                 attr=self.name,
                 obj=instance,
             )
@@ -664,8 +661,8 @@ class FrozenObject:
 
     def __repr__(self):
         if isinstance(self._argreprs, str):
-            return "<%s at 0x%x>" % (type(self).__name__, id(self))
-        return "%s(%s)" % (type(self).__name__, ", ".join(self._argreprs))
+            return f"<{type(self).__name__} at 0x{id(self):x}>"
+        return f"{type(self).__name__}({', '.join(self._argreprs)})"
 
     @property
     def _argreprs(self):
@@ -683,7 +680,7 @@ class FrozenObject:
             if not hasattr(self, arg):
                 # We rely on storing the initial arguments. If we don't have
                 # them, we don't auto-generate a repr.
-                self.__argreprs = "Cannot find %r" % arg
+                self.__argreprs = f"Cannot find '{arg}'"
                 break
             value = getattr(self, arg)
 
@@ -696,6 +693,6 @@ class FrozenObject:
                 not_default = True
 
             if not_default:
-                self.__argreprs.append("%s=%r" % (arg, value))
+                self.__argreprs.append(f"{arg}={value!r}")
 
         return self.__argreprs

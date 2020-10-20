@@ -1,7 +1,6 @@
 import errno
 import multiprocessing
 import os
-import pathlib
 import sys
 from subprocess import CalledProcessError
 
@@ -534,7 +533,6 @@ def test_writeablecacheindex_warning(monkeypatch, tmpdir):
                     raise CalledProcessError(-1, "move")
 
             monkeypatch.setattr(idx, "cache_dir", RaiseError(idx.cache_dir))
-            pass
 
 
 def test_shrink_does_not_fail_if_lock_cannot_be_acquired(tmpdir):

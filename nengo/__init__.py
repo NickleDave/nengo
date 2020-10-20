@@ -14,8 +14,8 @@ from nengo.version import version as __version__
 
 if sys.version_info < (3, 6):
     raise ImportError(
-        """
-You are running Python version %s with Nengo version %s.
+        f"""
+You are running Python version {sys.version} with Nengo version {__version__}.
 Nengo requires at least Python 3.6.
 
 The fact that this version was installed on your system probably means that you
@@ -31,7 +31,6 @@ There are two options for getting Nengo working:
 
  $ pip install 'nengo<3.0'
 """
-        % (sys.version, __version__)
     )
 del sys
 

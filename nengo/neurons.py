@@ -75,15 +75,14 @@ class NeuronType(FrozenObject):
             for name, value in self.initial_state.items():
                 if name not in self.state:
                     raise ValidationError(
-                        "State variable %r not recognized; should be one of %s"
-                        % (name, ", ".join(repr(k) for k in self.state)),
+                        f"State variable '{name}' not recognized; should be one of "
+                        f"{', '.join(repr(k) for k in self.state)}",
                         attr="initial_state",
                         obj=self,
                     )
                 if not (isinstance(value, Distribution) or is_array_like(value)):
                     raise ValidationError(
-                        "State variable %r must be a distribution or array-like"
-                        % (name,),
+                        f"State variable '{name}' must be a distribution or array-like",
                         attr="initial_state",
                         obj=self,
                     )
@@ -563,7 +562,7 @@ class LIFRate(NeuronType):
         if not np.all(max_rates < inv_tau_ref):
             raise ValidationError(
                 "Max rates must be below the inverse "
-                "refractory period (%0.3f)" % inv_tau_ref,
+                f"refractory period ({inv_tau_ref:0.3f})",
                 attr="max_rates",
                 obj=self,
             )

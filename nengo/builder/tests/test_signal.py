@@ -66,7 +66,7 @@ def test_signaldict(allclose):
     # __str__ pretty-prints signals and current values
     # Order not guaranteed for dicts, so we have to loop
     for k in signaldict:
-        assert "%s %s" % (repr(k), repr(signaldict[k])) in str(signaldict)
+        assert f"{repr(k)} {repr(signaldict[k])}" in str(signaldict)
 
 
 def test_signaldict_reset(allclose):

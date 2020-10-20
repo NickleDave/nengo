@@ -1,5 +1,3 @@
-import os
-
 import pytest
 import _pytest.capture
 

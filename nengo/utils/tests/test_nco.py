@@ -24,7 +24,7 @@ def fixture_testfile(data, tmp_path):
 
 def write_custom_nco_header(fileobj, magic_string="NCO", version=0):
     magic_string = magic_string.encode("utf-8")
-    header_format = "@{}sBLLLL".format(len(magic_string))
+    header_format = f"@{len(magic_string)}sBLLLL"
     assert struct.calcsize(header_format) == nco.HEADER_SIZE
 
     header = struct.pack(header_format, magic_string, version, 0, 1, 2, 3)

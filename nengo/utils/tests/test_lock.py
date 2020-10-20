@@ -1,4 +1,3 @@
-import os.path
 import multiprocessing
 import sys
 import time

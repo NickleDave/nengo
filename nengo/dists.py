@@ -67,7 +67,7 @@ def get_samples(dist_or_samples, n, d=None, rng=np.random):
 
        def mean(values, n=100):
            samples = get_samples(values, n=n, rng=rng)
-           print("%.4f" % np.mean(samples))
+           print(f"{np.mean(samples):.4f}")
 
        mean([1, 2, 3, 4])
        mean(nengo.dists.Gaussian(0, 1))
@@ -118,7 +118,7 @@ class PDF(Distribution):
         psum = np.sum(p)
         if np.abs(psum - 1) > 1e-8:
             raise ValidationError(
-                "PDF must sum to one (sums to %f)" % psum, attr="p", obj=self
+                f"PDF must sum to one (sums to {psum:f})", attr="p", obj=self
             )
 
         self.x = x
@@ -346,7 +346,7 @@ class Choice(Distribution):
         total = float(weights.sum())
         if total <= 0:
             raise ValidationError(
-                "Sum of weights must be positive (got %f)" % total,
+                f"Sum of weights must be positive (got {total:f})",
                 attr="weights",
                 obj=self,
             )
@@ -359,8 +359,7 @@ class Choice(Distribution):
     def sample(self, n, d=None, rng=np.random):
         if d is not None and self.dimensions != d:
             raise ValidationError(
-                "Options must be of dimensionality %d "
-                "(got %d)" % (d, self.dimensions),
+                f"Options must be of dimensionality {d} (got {self.dimensions})",
                 attr="options",
                 obj=self,
             )
@@ -403,21 +402,21 @@ class Samples(Distribution):
         if samples.shape[0] != shape[0]:
             raise ValidationError(
                 "Wrong number of samples requested; got "
-                "%d, should be %d" % (n, samples.shape[0]),
+                f"{n}, should be {samples.shape[0]}",
                 attr="samples",
                 obj=self,
             )
         elif d is None and len(samples.shape) != 1:
             raise ValidationError(
                 "Wrong sample dimensionality requested; got "
-                "'None', should be %d" % (samples.shape[1],),
+                f"'None', should be {samples.shape[1]}",
                 attr="samples",
                 obj=self,
             )
         elif d is not None and samples.shape[1] != shape[1]:
             raise ValidationError(
                 "Wrong sample dimensionality requested; got "
-                "%d, should be %d" % (d, samples.shape[1]),
+                f"{d}, should be {samples.shape[1]}",
                 attr="samples",
                 obj=self,
             )

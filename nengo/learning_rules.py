@@ -128,7 +128,7 @@ class PES(LearningRuleType):
 
 
 def _remove_default_post_synapse(argreprs, default):
-    default_post_synapse = "post_synapse=%r" % (default,)
+    default_post_synapse = f"post_synapse={default!r}"
     if default_post_synapse in argreprs:
         argreprs.remove(default_post_synapse)
     return argreprs
@@ -319,14 +319,14 @@ class LearningRuleTypeParam(Parameter):
     def check_rule(self, instance, rule):
         if not isinstance(rule, LearningRuleType):
             raise ValidationError(
-                "'%s' must be a learning rule type or a dict or "
-                "list of such types." % rule,
+                f"'{rule}' must be a learning rule type or a dict or "
+                "list of such types.",
                 attr=self.name,
                 obj=instance,
             )
         if rule.modifies not in ("encoders", "decoders", "weights"):
             raise ValidationError(
-                "Unrecognized target %r" % rule.modifies, attr=self.name, obj=instance
+                f"Unrecognized target {rule.modifies!r}", attr=self.name, obj=instance
             )
 
     def coerce(self, instance, rule):

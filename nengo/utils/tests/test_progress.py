@@ -221,14 +221,12 @@ def test_progress_tracker():
     assert not progress_bar.closed
     with tracker:
         for i in range(stages):
-            sub_progress = tracker.next_stage(
-                name_during="stage%d" % i, max_steps=steps
-            )
+            sub_progress = tracker.next_stage(name_during=f"stage{i}", max_steps=steps)
             with sub_progress:
                 for j in range(steps):
                     sub_progress.step()
                     time.sleep(sleep_interval)
-                    assert progress_bar.updates[-1].name_during == "stage%d" % i
+                    assert progress_bar.updates[-1].name_during == f"stage{i}"
                     assert progress_bar.updates[-1].n_steps == j + 1
 
             time.sleep(sleep_interval)
