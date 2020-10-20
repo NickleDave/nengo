@@ -1,4 +1,4 @@
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
 import inspect
 
 import numpy as np
@@ -619,7 +619,7 @@ class FrozenObject:
     _param_init_order = []
 
     def __init__(self):
-        self._paramdict = OrderedDict(
+        self._paramdict = dict(
             (k, v)
             for k, v in inspect.getmembers(type(self))
             if isinstance(v, Parameter) and not isinstance(v, ObsoleteParam)
