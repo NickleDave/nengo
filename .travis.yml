@@ -107,7 +107,7 @@ before_install:
   # upgrade pip
   - pip install pip --upgrade
   # install/run nengo-bones
-  - pip install git+https://github.com/nengo/nengo-bones#egg=nengo-bones
+  - pip install git+https://github.com/nengo/nengo-bones@py35#egg=nengo-bones
   - bones-generate --output-dir .ci ci-scripts
   - bones-check --verbose
   # display environment info
