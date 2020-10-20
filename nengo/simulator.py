@@ -93,7 +93,7 @@ class Simulator:
        --- sim1
        +++ sim2
        @@ -0,0 +1 @@
-       +Copy: <Connection from <Node "Node"> to <Ensemble "Ensemble">>
+       +Copy: <Connection from <Node 'Node'> to <Ensemble 'Ensemble'>>
        @@ -4,0 +6 @@
        +SimProcess: Lowpass(tau=0.005)
 

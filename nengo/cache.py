@@ -104,7 +104,7 @@ def safe_makedirs(path):
     """Try to make directories, but continue on error."""
     if not path.exists():
         try:
-            path.mkdir()
+            path.mkdir(parents=True)
         except OSError as err:
             logger.warning("OSError during safe_makedirs: %s", err)
 
@@ -582,10 +582,10 @@ class DecoderCache:
             cache_dir = self.get_default_dir()
         self.cache_dir = pathlib.Path(cache_dir)
         if readonly:
-            self._index = CacheIndex(cache_dir)
+            self._index = CacheIndex(self.cache_dir)
         else:
             safe_makedirs(self.cache_dir)
-            self._index = WriteableCacheIndex(cache_dir)
+            self._index = WriteableCacheIndex(self.cache_dir)
         self._fragment_size = get_fragment_size(self.cache_dir)
         self._fd = None
         self._in_context = False
