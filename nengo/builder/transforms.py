@@ -242,12 +242,88 @@ class GeneralConvInc(Operator):
 
 
 class ConvInc(GeneralConvInc):
+    """Apply convolutional weights to input signal.
+
+    .. versionadded:: 3.0.0
+
+    Parameters
+    ----------
+    W : Signal
+        The convolutional weights (a.k.a. the kernel).
+    X : Signal
+        The input signal.
+    Y : Signal
+        Output signal to be incremented.
+    conv : `~nengo.Convolution`
+        The Convolution transform being applied.
+    tag : str, optional
+        A label associated with the operator, for debugging purposes.
+
+    Attributes
+    ----------
+    W : Signal
+        The convolutional weights.
+    X : Signal
+        The input signal.
+    Y : Signal
+        Output signal to be incremented.
+    conv : `~nengo.Convolution`
+        The Convolution transform being applied.
+    tag : str, optional
+        A label associated with the operator, for debugging purposes.
+
+    Notes
+    -----
+    1. sets ``[]``
+    2. incs ``[Y]``
+    3. reads ``[W, X]``
+    4. updates ``[]``
+    """
+
     def __init__(self, W, X, Y, conv, tag=None):
         super().__init__(W, X, Y, conv, tag=tag)
         assert not self.transpose
 
 
 class ConvTransposeInc(GeneralConvInc):
+    """Apply transposed convolutional weights to input signal.
+
+    .. versionadded:: 3.2.0
+
+    Parameters
+    ----------
+    W : Signal
+        The convolutional weights (a.k.a. the kernel).
+    X : Signal
+        The input signal.
+    Y : Signal
+        Output signal to be incremented.
+    conv : `~nengo.transforms.ConvolutionTranspose`
+        The ConvolutionTranspose transform being applied.
+    tag : str, optional
+        A label associated with the operator, for debugging purposes.
+
+    Attributes
+    ----------
+    W : Signal
+        The convolutional weights.
+    X : Signal
+        The input signal.
+    Y : Signal
+        Output signal to be incremented.
+    conv : `~nengo.transforms.ConvolutionTranspose`
+        The ConvolutionTranspose transform being applied.
+    tag : str, optional
+        A label associated with the operator, for debugging purposes.
+
+    Notes
+    -----
+    1. sets ``[]``
+    2. incs ``[Y]``
+    3. reads ``[W, X]``
+    4. updates ``[]``
+    """
+
     def __init__(self, W, X, Y, conv, tag=None):
         super().__init__(W, X, Y, conv, tag=tag)
         assert self.transpose
