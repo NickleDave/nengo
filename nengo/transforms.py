@@ -537,11 +537,11 @@ class ConvolutionTranspose(_ConvolutionBase):
     """An N-dimensional transposed convolutional transform.
 
     This performs the transpose operation of `.Convolution`. The ``kernel_size``,
-    ``strides``, and ``padding`` parameters all act as in ``.Convolution``, so this
-    transform will be the transpose of a ``.Convolution`` transform with those
-    parameters. The ``n_filters`` and ``input_shape`` parameters are relative to _this_
+    ``strides``, and ``padding`` parameters all act as in `.Convolution`, so this
+    transform will be the transpose of a `.Convolution` transform with those
+    parameters. The ``n_filters`` and ``input_shape`` parameters are relative to *this*
     transform. The output shape is ambiguous, and can thus be specified (i.e. with
-    ``.Convolution``, there can be more than input shape that produces the same output
+    `.Convolution`, there can be more than input shape that produces the same output
     shape, so here, there are multiple valid output shapes for some input shapes).
 
     The dimensionality of the transpose convolution is determined by the input shape.
@@ -551,14 +551,14 @@ class ConvolutionTranspose(_ConvolutionBase):
     Parameters
     ----------
     n_filters : int
-        The number of channels in the _output_ of this transform.
+        The number of channels in the *output* of this transform.
     input_shape : tuple of int or `.ChannelShape`
         Shape of the input signal to this transform; e.g.,
         ``(height, width, channels)`` for a 2D convolution with ``channels_last=True``.
-    input_shape : tuple of int or `.ChannelShape`, optional
+    output_shape : tuple of int or `.ChannelShape`, optional
         Shape of the output signal of this transform; e.g.,
-        ``(height, width, n_filters)`` for a 2D convolution with ``channels_last=True``.
-
+        ``(output_height, output_width, n_filters)`` for a 2D convolution with
+        ``channels_last=True``. Defaults to the smallest valid output shape.
     kernel_size : tuple of int, optional
         Size of the convolutional kernels (1 element for a 1D convolution,
         2 for a 2D convolution, etc.).
@@ -566,7 +566,7 @@ class ConvolutionTranspose(_ConvolutionBase):
         Stride of the convolution (1 element for a 1D convolution, 2 for
         a 2D convolution, etc.).
     padding : ``"same"`` or ``"valid"``, optional
-        Padding method for corresponding ``.Convolution``.
+        Padding method for corresponding `.Convolution`.
     channels_last : bool, optional
         If ``True`` (default), the channels are the last dimension in the input
         signal (e.g., a 28x28 image with 3 channels would have shape
